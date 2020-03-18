@@ -1,0 +1,12 @@
+---
+#crete user
+- hosts: db
+  remote_user: exploit
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - mysql_user:
+     name: hawa
+     password: toor
+     priv: '*.*:ALL,GRANT'

@@ -1,0 +1,27 @@
+---
+#install php
+- name: install php
+  hosts: web
+  remote_user: exploit
+  become: yes
+  become_method: sudo
+ 
+  tasks:
+    - name: install php5
+      apt: name={{ item }} state=present
+      with_items:
+        - php-common
+        - php-cli
+        - php-fpm
+        - php-json
+        - php-pdo
+        - php-mysql
+        - php-zip
+        - php-gd
+        - php-mbstring
+        - php-curl
+        - php-xml
+        - php-pear
+        - php-bcmath
+        - php-intl
+        - libapache2-mod-php

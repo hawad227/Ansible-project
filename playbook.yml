@@ -1,0 +1,84 @@
+---
+#install apache2
+- name: installation apache
+  hosts: web
+  remote_user: exploit
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: install apache
+      apt: name=apache2
+    
+
+    - name: Update default Apache site
+      copy:
+        src: 000-default.conf
+        dest: /etc/apache2/sites-available/000-default.conf
+ 
+    - name: download wordpress
+      get_url:
+       url: https://wordpress.org/latest.tar.gz
+       dest: /tmp/
+   
+    - name: decompress wordpress
+      unarchive: 
+        src: /tmp/wordpress-5.3.2.tar.gz
+        dest: /var/www/ 
+        copy: no
+
+    - name: attribution des droits 
+      shell: chown www-data:www-data/var/www/wordpress -R
+      shell: chmod -R -wx,u+rwX,g+rX,o+rX /var/www/wordpress
+
+    #- name: Update default Apache site
+     # copy:
+      #  src: 000-default.conf
+       # dest: /etc/apache2/sites-available/000-default.conf 
+
+
+    #   lineinfile:
+     #   dest=/etc/apache2/sites-enabled/000-default.conf
+       #  regexp="(.)+DocumentRoot /var/www/"
+        #line="DocumentRoot /var/www/wordpress"
+
+    - name: Copy sample config file
+      command: mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php creates=/var/www/wordpress/wp-config.php
+ 
+    - name: Update WordPress config file
+      lineinfile:
+       dest: /var/www/wordpress/wp-config.php
+       regexp: "{{ item.regexp }}"
+       line: "{{ item.line }}"    
+      with_items:
+       - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', 'dbwordpress');"}
+       - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', 'hawad');"}
+       - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', 'toor');"}
+       - {'regexp': "define\\('DB_HOST', '(.)+'\\);", 'line': "define('DB_HOST', '172.20.10.6');"}
+     
+    - name: appication des régles https
+      iptables:
+       chain: INPUT
+       protocol: tcp
+       destination_port: 443
+       ctstate: NEW
+       syn: match
+       jump: ACCEPT
+       comment: Accept new https connections.
+       
+    - name: appication des régles  http
+      iptables:
+       chain: INPUT
+       protocol: tcp
+       destination_port: 80
+       ctstate: NEW
+       syn: match
+       jump: ACCEPT
+       comment: Accept new http connections.
+    
+    - name: reload apache2
+      service:
+       name: apache2
+       state: restarted
+       enabled: yes
+

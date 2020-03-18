@@ -1,0 +1,14 @@
+---
+#install mariadbclient pour nginx
+- name: installation 
+  hosts: nginx
+  remote_user: exploit
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: install mariadbclient
+      apt: name=mariadb-client
+
+    - name: connexion au serveur de bdd
+      command: mysql -u hawadiallo -h 172.20.10.6 --password=toor

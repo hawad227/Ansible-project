@@ -1,0 +1,21 @@
+---
+- hosts: db
+  remote_user: exploit
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+  - mysql_db:
+     login_user: root
+     login_password: Toor1234
+     name: dbwordpress1
+     state: present
+
+  - mysql_user:
+     login_user: root
+     login_password: Toor1234
+     name: hawadiallo
+     host: 172.20.10.4
+     password: toor
+     priv: 'dbwordpress.*:ALL,GRANT'
